@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/book_provider.dart';
+import 'providers/cart_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/buyer_screen.dart';
 import 'screens/seller_screen.dart';
 import 'screens/contact_screen.dart';
+import 'screens/cart_screen.dart';
 
 void main() {
   runApp(
@@ -15,6 +17,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => BookProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: const MyApp(),
     ),
@@ -27,19 +30,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Book Resale Platform',
+      title: 'Book Resale App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      initialRoute: '/',
       routes: {
-        '/': (context) => const HomeScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/services': (context) => const ServicesScreen(),
-        '/buyer': (context) => const BuyerScreen(),
-        '/seller': (context) => const SellerScreen(),
-        '/contact': (context) => const ContactScreen(),
+        '/': (ctx) => const HomeScreen(),
+        '/login': (ctx) => const LoginScreen(),
+        '/services': (ctx) => const ServicesScreen(),
+        '/buyer': (ctx) => const BuyerScreen(),
+        '/seller': (ctx) => const SellerScreen(),
+        '/contact': (ctx) => const ContactScreen(),
+        '/cart': (ctx) => const CartScreen(),
       },
     );
   }

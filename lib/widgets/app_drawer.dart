@@ -10,7 +10,8 @@ class AppDrawer extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     
     return Drawer(
-      child: Column(
+      child: ListView(
+        padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
@@ -32,14 +33,27 @@ class AppDrawer extends StatelessWidget {
               Navigator.pushReplacementNamed(context, '/');
             },
           ),
-          if (!authProvider.isLoggedIn)
-            ListTile(
-              leading: const Icon(Icons.login),
-              title: const Text('Login'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-            ),
+          ListTile(
+            leading: const Icon(Icons.shopping_cart),
+            title: const Text('Buy Books'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/buyer');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.store),
+            title: const Text('Sell Books'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/seller');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.shopping_cart),
+            title: const Text('My Cart'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/cart');
+            },
+          ),
           if (authProvider.isLoggedIn)
             ListTile(
               leading: const Icon(Icons.dashboard),
