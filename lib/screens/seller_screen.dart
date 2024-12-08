@@ -43,32 +43,30 @@ class _SellerScreenState extends State<SellerScreen> {
     super.dispose();
   }
 
-  void _addNewBook() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _myBooks.add(
-          Book(
-            id: DateTime.now().toString(),
-            name: _nameController.text,
-            writerName: _writerController.text,
-            marketPrice: double.parse(_marketPriceController.text),
-            sellingPrice: double.parse(_sellingPriceController.text),
-            location: _locationController.text,
-            condition: _selectedCondition,
-            sellerId: 'seller1',
-            genre: _selectedGenre,
-          ),
-        );
-      });
-      Navigator.pop(context);
+  void _showBookDialog({Book? book}) {
+    // If book is provided, we're editing, otherwise adding new
+    if (book != null) {
+      _nameController.text = book.name;
+      _writerController.text = book.writerName;
+      _marketPriceController.text = book.marketPrice.toString();
+      _sellingPriceController.text = book.sellingPrice.toString();
+      _locationController.text = book.location;
+      _selectedCondition = book.condition;
+      _selectedGenre = book.genre;
+    } else {
+      _nameController.clear();
+      _writerController.clear();
+      _marketPriceController.clear();
+      _sellingPriceController.clear();
+      _locationController.clear();
+      _selectedCondition = 'Like New';
+      _selectedGenre = 'Programming';
     }
-  }
 
-  void _showAddBookDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add New Book'),
+        title: Text(book == null ? 'Add New Book' : 'Edit Book'),
         content: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -147,8 +145,79 @@ class _SellerScreenState extends State<SellerScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: _addNewBook,
-            child: const Text('Add Book'),
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                setState(() {
+                  final newBook = Book(
+                    id: book?.id ?? DateTime.now().toString(),
+                    name: _nameController.text,
+                    writerName: _writerController.text,
+                    marketPrice: double.parse(_marketPriceController.text),
+                    sellingPrice: double.parse(_sellingPriceController.text),
+                    location: _locationController.text,
+                    condition: _selectedCondition,
+                    sellerId: 'seller1',
+                    genre: _selectedGenre,
+                  );
+
+                  if (book != null) {
+                    // Update existing book
+                    final index = _myBooks.indexWhere((b) => b.id == book.id);
+                    _myBooks[index] = newBook;
+                  } else {
+                    // Add new book
+                    _myBooks.add(newBook);
+                  }
+                });
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      book == null
+                          ? 'Book added successfully!'
+                          : 'Book updated successfully!',
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            child: Text(book == null ? 'Add Book' : 'Save Changes'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteBook(Book book) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Book'),
+        content: Text('Are you sure you want to delete "${book.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _myBooks.removeWhere((b) => b.id == book.id);
+              });
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Book deleted successfully!'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -181,18 +250,26 @@ class _SellerScreenState extends State<SellerScreen> {
                 ],
               ),
               isThreeLine: true,
-              trailing: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  // TODO: Implement edit functionality
-                },
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => _showBookDialog(book: book),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    color: Colors.red,
+                    onPressed: () => _deleteBook(book),
+                  ),
+                ],
               ),
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddBookDialog,
+        onPressed: () => _showBookDialog(),
         child: const Icon(Icons.add),
       ),
     );

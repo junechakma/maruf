@@ -6,6 +6,7 @@ import 'screens/login_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/buyer_screen.dart';
 import 'screens/seller_screen.dart';
+import 'screens/contact_screen.dart';
 
 void main() {
   runApp(
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
         '/services': (context) => const ServicesScreen(),
         '/buyer': (context) => const BuyerScreen(),
         '/seller': (context) => const SellerScreen(),
+        '/contact': (context) => const ContactScreen(),
       },
     );
   }

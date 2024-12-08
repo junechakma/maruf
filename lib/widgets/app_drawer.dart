@@ -40,7 +40,7 @@ class AppDrawer extends StatelessWidget {
                 Navigator.pushReplacementNamed(context, '/login');
               },
             ),
-          if (authProvider.isLoggedIn) ...[
+          if (authProvider.isLoggedIn)
             ListTile(
               leading: const Icon(Icons.dashboard),
               title: const Text('Services'),
@@ -48,22 +48,16 @@ class AppDrawer extends StatelessWidget {
                 Navigator.pushReplacementNamed(context, '/services');
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.shopping_bag),
-              title: const Text('Buy Books'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/buyer');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.store),
-              title: const Text('Sell Books'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/seller');
-              },
-            ),
+          ListTile(
+            leading: const Icon(Icons.contact_support),
+            title: const Text('Contact Us'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/contact');
+            },
+          ),
+          if (authProvider.isLoggedIn) ...[
             const Spacer(),
-            Divider(),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Logout'),
