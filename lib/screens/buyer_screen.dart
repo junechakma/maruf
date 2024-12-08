@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/book.dart';
+import '../providers/book_provider.dart';
 import '../widgets/app_drawer.dart';
 
 class BuyerScreen extends StatefulWidget {
@@ -10,21 +12,6 @@ class BuyerScreen extends StatefulWidget {
 }
 
 class _BuyerScreenState extends State<BuyerScreen> {
-  final List<Book> _books = [
-    Book(
-      id: '1',
-      name: 'Flutter in Action',
-      writerName: 'Eric Windmill',
-      marketPrice: 50.0,
-      sellingPrice: 35.0,
-      location: 'New York',
-      condition: 'Like New',
-      sellerId: 'seller1',
-      genre: 'Programming',
-    ),
-    // Add more sample books here
-  ];
-
   String _selectedGenre = 'All';
   RangeValues _priceRange = const RangeValues(0, 1000);
 
@@ -79,31 +66,41 @@ class _BuyerScreenState extends State<BuyerScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: _books.length,
-              itemBuilder: (context, index) {
-                final book = _books[index];
-                if ((_selectedGenre == 'All' || book.genre == _selectedGenre) &&
-                    book.sellingPrice >= _priceRange.start &&
-                    book.sellingPrice <= _priceRange.end) {
-                  return Card(
-                    margin: const EdgeInsets.all(8.0),
-                    child: ListTile(
-                      title: Text(book.name),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Author: ${book.writerName}'),
-                          Text('Price: \$${book.sellingPrice}'),
-                          Text('Condition: ${book.condition}'),
-                          Text('Location: ${book.location}'),
-                        ],
-                      ),
-                      isThreeLine: true,
-                    ),
+            child: Consumer<BookProvider>(
+              builder: (context, bookProvider, child) {
+                final filteredBooks = bookProvider.getFilteredBooks(
+                  genre: _selectedGenre,
+                  priceRange: _priceRange,
+                );
+
+                if (filteredBooks.isEmpty) {
+                  return const Center(
+                    child: Text('No books found matching your criteria'),
                   );
                 }
-                return const SizedBox.shrink();
+
+                return ListView.builder(
+                  itemCount: filteredBooks.length,
+                  itemBuilder: (context, index) {
+                    final book = filteredBooks[index];
+                    return Card(
+                      margin: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                        title: Text(book.name),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Author: ${book.writerName}'),
+                            Text('Price: \$${book.sellingPrice}'),
+                            Text('Condition: ${book.condition}'),
+                            Text('Location: ${book.location}'),
+                          ],
+                        ),
+                        isThreeLine: true,
+                      ),
+                    );
+                  },
+                );
               },
             ),
           ),

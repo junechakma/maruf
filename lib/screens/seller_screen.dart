@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/book.dart';
+import '../providers/book_provider.dart';
 import '../widgets/app_drawer.dart';
 
 class SellerScreen extends StatefulWidget {
@@ -10,20 +12,6 @@ class SellerScreen extends StatefulWidget {
 }
 
 class _SellerScreenState extends State<SellerScreen> {
-  final List<Book> _myBooks = [
-    Book(
-      id: '1',
-      name: 'Flutter in Action',
-      writerName: 'Eric Windmill',
-      marketPrice: 50.0,
-      sellingPrice: 35.0,
-      location: 'New York',
-      condition: 'Like New',
-      sellerId: 'seller1',
-      genre: 'Programming',
-    ),
-  ];
-
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _writerController = TextEditingController();
@@ -44,7 +32,6 @@ class _SellerScreenState extends State<SellerScreen> {
   }
 
   void _showBookDialog({Book? book}) {
-    // If book is provided, we're editing, otherwise adding new
     if (book != null) {
       _nameController.text = book.name;
       _writerController.text = book.writerName;
@@ -147,28 +134,25 @@ class _SellerScreenState extends State<SellerScreen> {
           ElevatedButton(
             onPressed: () {
               if (_formKey.currentState!.validate()) {
-                setState(() {
-                  final newBook = Book(
-                    id: book?.id ?? DateTime.now().toString(),
-                    name: _nameController.text,
-                    writerName: _writerController.text,
-                    marketPrice: double.parse(_marketPriceController.text),
-                    sellingPrice: double.parse(_sellingPriceController.text),
-                    location: _locationController.text,
-                    condition: _selectedCondition,
-                    sellerId: 'seller1',
-                    genre: _selectedGenre,
-                  );
+                final bookProvider = context.read<BookProvider>();
+                final newBook = Book(
+                  id: book?.id ?? DateTime.now().toString(),
+                  name: _nameController.text,
+                  writerName: _writerController.text,
+                  marketPrice: double.parse(_marketPriceController.text),
+                  sellingPrice: double.parse(_sellingPriceController.text),
+                  location: _locationController.text,
+                  condition: _selectedCondition,
+                  sellerId: 'seller1',
+                  genre: _selectedGenre,
+                );
 
-                  if (book != null) {
-                    // Update existing book
-                    final index = _myBooks.indexWhere((b) => b.id == book.id);
-                    _myBooks[index] = newBook;
-                  } else {
-                    // Add new book
-                    _myBooks.add(newBook);
-                  }
-                });
+                if (book != null) {
+                  bookProvider.updateBook(newBook);
+                } else {
+                  bookProvider.addBook(newBook);
+                }
+
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -202,9 +186,7 @@ class _SellerScreenState extends State<SellerScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                _myBooks.removeWhere((b) => b.id == book.id);
-              });
+              context.read<BookProvider>().deleteBook(book.id);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -231,40 +213,45 @@ class _SellerScreenState extends State<SellerScreen> {
         title: const Text('My Books'),
       ),
       drawer: const AppDrawer(),
-      body: ListView.builder(
-        itemCount: _myBooks.length,
-        itemBuilder: (context, index) {
-          final book = _myBooks[index];
-          return Card(
-            margin: const EdgeInsets.all(8.0),
-            child: ListTile(
-              title: Text(book.name),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Author: ${book.writerName}'),
-                  Text('Market Price: \$${book.marketPrice}'),
-                  Text('Selling Price: \$${book.sellingPrice}'),
-                  Text('Condition: ${book.condition}'),
-                  Text('Location: ${book.location}'),
-                ],
-              ),
-              isThreeLine: true,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => _showBookDialog(book: book),
+      body: Consumer<BookProvider>(
+        builder: (context, bookProvider, child) {
+          final books = bookProvider.books;
+          return ListView.builder(
+            itemCount: books.length,
+            itemBuilder: (context, index) {
+              final book = books[index];
+              return Card(
+                margin: const EdgeInsets.all(8.0),
+                child: ListTile(
+                  title: Text(book.name),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Author: ${book.writerName}'),
+                      Text('Market Price: \$${book.marketPrice}'),
+                      Text('Selling Price: \$${book.sellingPrice}'),
+                      Text('Condition: ${book.condition}'),
+                      Text('Location: ${book.location}'),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    color: Colors.red,
-                    onPressed: () => _deleteBook(book),
+                  isThreeLine: true,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _showBookDialog(book: book),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        color: Colors.red,
+                        onPressed: () => _deleteBook(book),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
